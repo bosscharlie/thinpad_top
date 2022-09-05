@@ -32,5 +32,80 @@ module sram_controller #(
 );
 
   // TODO: 实现 SRAM 控制器
+  typedef enum logic [2:0] {
+    STATE_IDLE,
+    STATE_READ,
+    STATE_READ_2,
+    STATE_WRITE,
+    STATE_WRITE_2,
+    STATE_WRITE_3,
+    STATE_DONE
+  } state_t;
+
+  reg data_z;
+  state_t state;
+  
+  assign sram_data = data_z ? 32'bz : wb_dat_i;
+  assign sram_be_n = ~wb_sel_i;
+
+  always_ff @ (posedge clk_i) begin
+    if(rst_i)begin
+      state <= STATE_IDLE;
+      wb_ack_o <= 1'b0;
+      wb_dat_o <= 0;
+      sram_ce_n <= 1'b1;
+      sram_oe_n <= 1'b1;
+      sram_we_n <= 1'b1;
+      data_z <= 1'b1;
+    end else begin
+      case(state)
+        STATE_IDLE: begin
+          if(wb_cyc_i && wb_stb_i) begin
+            if(wb_we_i) begin
+              state <= STATE_WRITE;
+              sram_ce_n <= 1'b0;
+              sram_we_n <= 1'b1;
+              sram_addr <= wb_adr_i[19:0];//确定地址写什么
+              data_z <= 1'b0;
+            end else begin
+              state <= STATE_READ;
+              sram_ce_n <= 1'b0;
+              sram_oe_n <= 1'b0;
+              sram_addr <= wb_adr_i[19:0];//确定地址写什么
+            end
+          end
+        end
+        STATE_READ: begin
+          state <= STATE_READ_2;
+        end
+        STATE_READ_2: begin
+          wb_dat_o <= sram_data;
+          wb_ack_o <= 1'b1;
+          sram_ce_n <= 1'b1;
+          sram_oe_n <= 1'b1;
+          state <= STATE_DONE;
+        end
+        STATE_WRITE: begin
+          sram_we_n <= 1'b0;
+          state <= STATE_WRITE_2;
+        end
+        STATE_WRITE_2: begin
+          sram_we_n <= 1'b1;
+          state <= STATE_WRITE_3;
+        end
+        STATE_WRITE_3: begin
+          sram_ce_n <= 1'b1;
+          data_z <= 1'b1;
+          wb_ack_o <= 1'b1;
+          state <= STATE_DONE;
+        end
+        STATE_DONE: begin
+          wb_ack_o <= 1'b0;
+          state <= STATE_IDLE;
+        end
+      endcase
+    end
+  end
+
 
 endmodule

@@ -52,26 +52,80 @@ module tb;
 
   assign rxd = 1'b1;  // idle state
 
+  // initial begin
+  //   // 在这里可以自定义测试输入序列，例如：
+  //   dip_sw = 32'h2;
+  //   touch_btn = 0;
+  //   reset_btn = 1;
+  //   #100;
+  //   reset_btn = 0;
+  //   for (integer i = 0; i < 20; i = i + 1) begin
+  //     #100;  // 等待 100ns
+  //     push_btn = 1;  // 按下手工时钟按钮
+  //     #100;  // 等待 100ns
+  //     push_btn = 0;  // 松开手工时钟按钮
+  //   end
+  //   // 模拟 PC 通过串口发送字符
+  //   cpld.pc_send_byte(8'h32);
+  //   #10000;
+  //   cpld.pc_send_byte(8'h33);
+  // end
+
   initial begin
-    // 在这里可以自定义测试输入序列，例如：
-    dip_sw = 32'h2;
-    touch_btn = 0;
-    reset_btn = 1;
+    dip_sw = 32'd0;
+    // reset_btn = 0;
+    push_btn = 0;
+    // reset_btn = 1;
+    // #50;
+    // reset_btn = 0;
     #100;
-    reset_btn = 0;
-    for (integer i = 0; i < 20; i = i + 1) begin
-      #100;  // 等待 100ns
-      push_btn = 1;  // 按下手工时钟按钮
-      #100;  // 等待 100ns
-      push_btn = 0;  // 松开手工时钟按钮
-    end
-    // 模拟 PC 通过串口发送字符
-    cpld.pc_send_byte(8'h32);
-    #10000;
-    cpld.pc_send_byte(8'h33);
+    push_btn = 1; 
+    #1700;
+    push_btn = 0;
   end
 
   // 待测试用户设计
+  //lab4
+  lab4_top lab4(
+      .clk_50M(clk_50M),
+      .clk_11M0592(clk_11M0592),
+      .push_btn(push_btn),
+      .reset_btn(reset_btn),
+      .touch_btn(touch_btn),
+      .dip_sw(dip_sw),
+      .leds(leds),
+      .dpy1(dpy1),
+      .dpy0(dpy0),
+      .txd(txd),
+      .rxd(rxd),
+      .uart_rdn(uart_rdn),
+      .uart_wrn(uart_wrn),
+      .uart_dataready(uart_dataready),
+      .uart_tbre(uart_tbre),
+      .uart_tsre(uart_tsre),
+      .base_ram_data(base_ram_data),
+      .base_ram_addr(base_ram_addr),
+      .base_ram_ce_n(base_ram_ce_n),
+      .base_ram_oe_n(base_ram_oe_n),
+      .base_ram_we_n(base_ram_we_n),
+      .base_ram_be_n(base_ram_be_n),
+      .ext_ram_data(ext_ram_data),
+      .ext_ram_addr(ext_ram_addr),
+      .ext_ram_ce_n(ext_ram_ce_n),
+      .ext_ram_oe_n(ext_ram_oe_n),
+      .ext_ram_we_n(ext_ram_we_n),
+      .ext_ram_be_n(ext_ram_be_n),
+      .flash_d(flash_d),
+      .flash_a(flash_a),
+      .flash_rp_n(flash_rp_n),
+      .flash_vpen(flash_vpen),
+      .flash_oe_n(flash_oe_n),
+      .flash_ce_n(flash_ce_n),
+      .flash_byte_n(flash_byte_n),
+      .flash_we_n(flash_we_n)
+  );
+
+
   thinpad_top dut (
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),
