@@ -74,19 +74,19 @@ module tb;
   initial begin
     dip_sw = 32'd0;
     // reset_btn = 0;
-    push_btn = 0;
-    // reset_btn = 1;
-    // #50;
-    // reset_btn = 0;
-    #100;
-    push_btn = 1; 
-    #1700;
-    push_btn = 0;
+    // push_btn = 0;
+    // // reset_btn = 1;
+    // // #50;
+    // // reset_btn = 0;
+    // #100;
+    // push_btn = 1; 
+    // #1700;
+    // push_btn = 0;
   end
 
   // 待测试用户设计
-  //lab4
-  lab4_top lab4(
+  //lab5
+  lab5_top lab5(
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),
       .push_btn(push_btn),
@@ -126,44 +126,44 @@ module tb;
   );
 
 
-  thinpad_top dut (
-      .clk_50M(clk_50M),
-      .clk_11M0592(clk_11M0592),
-      .push_btn(push_btn),
-      .reset_btn(reset_btn),
-      .touch_btn(touch_btn),
-      .dip_sw(dip_sw),
-      .leds(leds),
-      .dpy1(dpy1),
-      .dpy0(dpy0),
-      .txd(txd),
-      .rxd(rxd),
-      .uart_rdn(uart_rdn),
-      .uart_wrn(uart_wrn),
-      .uart_dataready(uart_dataready),
-      .uart_tbre(uart_tbre),
-      .uart_tsre(uart_tsre),
-      .base_ram_data(base_ram_data),
-      .base_ram_addr(base_ram_addr),
-      .base_ram_ce_n(base_ram_ce_n),
-      .base_ram_oe_n(base_ram_oe_n),
-      .base_ram_we_n(base_ram_we_n),
-      .base_ram_be_n(base_ram_be_n),
-      .ext_ram_data(ext_ram_data),
-      .ext_ram_addr(ext_ram_addr),
-      .ext_ram_ce_n(ext_ram_ce_n),
-      .ext_ram_oe_n(ext_ram_oe_n),
-      .ext_ram_we_n(ext_ram_we_n),
-      .ext_ram_be_n(ext_ram_be_n),
-      .flash_d(flash_d),
-      .flash_a(flash_a),
-      .flash_rp_n(flash_rp_n),
-      .flash_vpen(flash_vpen),
-      .flash_oe_n(flash_oe_n),
-      .flash_ce_n(flash_ce_n),
-      .flash_byte_n(flash_byte_n),
-      .flash_we_n(flash_we_n)
-  );
+  // thinpad_top dut (
+  //     .clk_50M(clk_50M),
+  //     .clk_11M0592(clk_11M0592),
+  //     .push_btn(push_btn),
+  //     .reset_btn(reset_btn),
+  //     .touch_btn(touch_btn),
+  //     .dip_sw(dip_sw),
+  //     .leds(leds),
+  //     .dpy1(dpy1),
+  //     .dpy0(dpy0),
+  //     .txd(txd),
+  //     .rxd(rxd),
+  //     .uart_rdn(uart_rdn),
+  //     .uart_wrn(uart_wrn),
+  //     .uart_dataready(uart_dataready),
+  //     .uart_tbre(uart_tbre),
+  //     .uart_tsre(uart_tsre),
+  //     .base_ram_data(base_ram_data),
+  //     .base_ram_addr(base_ram_addr),
+  //     .base_ram_ce_n(base_ram_ce_n),
+  //     .base_ram_oe_n(base_ram_oe_n),
+  //     .base_ram_we_n(base_ram_we_n),
+  //     .base_ram_be_n(base_ram_be_n),
+  //     .ext_ram_data(ext_ram_data),
+  //     .ext_ram_addr(ext_ram_addr),
+  //     .ext_ram_ce_n(ext_ram_ce_n),
+  //     .ext_ram_oe_n(ext_ram_oe_n),
+  //     .ext_ram_we_n(ext_ram_we_n),
+  //     .ext_ram_be_n(ext_ram_be_n),
+  //     .flash_d(flash_d),
+  //     .flash_a(flash_a),
+  //     .flash_rp_n(flash_rp_n),
+  //     .flash_vpen(flash_vpen),
+  //     .flash_oe_n(flash_oe_n),
+  //     .flash_ce_n(flash_ce_n),
+  //     .flash_byte_n(flash_byte_n),
+  //     .flash_we_n(flash_we_n)
+  // );
   // 时钟源
   clock osc (
       .clk_11M0592(clk_11M0592),

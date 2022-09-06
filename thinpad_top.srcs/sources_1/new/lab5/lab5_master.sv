@@ -7,6 +7,7 @@ module lab5_master #(
 
     // TODO: 添加需要的控制信号，例如按键开关？
     input  wire [31:0] dip_sw,     // 32 位拨码开关，拨到“ON”时为 1
+    // output reg  [31:0] data_o,
 
     // wishbone master
     output reg wb_cyc_o,
@@ -21,50 +22,158 @@ module lab5_master #(
 
   // TODO: 实现实验 5 的内存+串口 Master
 
-  // typedef enum logic[3:0] {  
-  //   STATE_IDLE,
-  //   READ_WAIT_ACTION,
-  //   READ_WAIT_CHECK,
-  //   READ_DATA_ACTION,
-  //   READ_DATA_DONE,
-  //   WRITE_SRAM_ACTION,
-  //   WRITE_SRAM_DONE,
-  //   WRITE_WAIT_ACTION,
-  //   WRITE_WATI_CHECK,
-  //   WRITE_DATA_ACTION,
-  //   WRITE_DATA_DONE,
-  //   STATE_DONE
-  // }state_t;
+  typedef enum logic[3:0] {  
+    STATE_IDLE,
+    READ_WAIT_ACTION,
+    READ_WAIT_CHECK,
+    READ_DATA_ACTION,
+    READ_DATA_DONE,
+    WRITE_SRAM_ACTION,
+    WRITE_SRAM_DONE,
+    WRITE_WAIT_ACTION,
+    WRITE_WAIT_CHECK,
+    WRITE_DATA_ACTION,
+    WRITE_DATA_DONE,
+    STATE_DONE
+  }state_t;
 
-  // state_t state;
-  // logic mem_addr[31:0];
-  // logic cnt[3:0];
-  // logic wb_ack_o_reg;
-  // logic[31:0] data;
-  // typedef enum logic[1:0] {  
-  //   MEM,
-  //   UART_STATUS,
-  //   UART_REG
-  // } mem_type_t;
-  // mem_type_t mem_type;
+  state_t state;
+  logic[31:0] mem_addr;
+  logic[3:0] cnt;
+  logic[31:0] wb_adr_o_reg;
+  logic[31:0] data;
+  logic[31:0] data_reg;
 
-  // assign wb_cyc_o = wb_stb_o;
+  // assign data_o = data;
 
-  // always_comb begin
-  //   wb_adr_o_reg = mem_addr;
-  //   case(mem_type)
-  //     MEM:begin
-  //       wb_adr_o_reg = mem_addr;
-  //     end
-  //     UART_STATUS:begin
-  //       wb_adr_o_reg = 32'h1000_0005;
-  //     end
-  //     UART_REG:begin
-  //       wb_adr_o_reg = 32'h1000_0000;
-  //     end
-  //   endcase
-  // end
 
+  typedef enum logic[1:0] {  
+    MEM,
+    UART_STATUS,
+    UART_REG
+  } mem_type_t;
+  mem_type_t mem_type;
+
+  assign wb_cyc_o = wb_stb_o;
+  assign wb_adr_o = wb_adr_o_reg;
+
+  always_comb begin
+    wb_adr_o_reg = mem_addr;
+    case(mem_type)
+      MEM:begin
+        wb_adr_o_reg = mem_addr;
+      end
+      UART_STATUS:begin
+        wb_adr_o_reg = 32'h1000_0005;
+      end
+      UART_REG:begin
+        wb_adr_o_reg = 32'h1000_0000;
+      end
+    endcase
+  end
+
+  always_ff @ (posedge clk_i) begin
+    if(rst_i)begin
+      state <= STATE_IDLE;
+      mem_addr <= dip_sw;
+      data <= 32'b0;
+    end else begin
+      case(state)
+        STATE_IDLE: begin
+          wb_stb_o <= 1'b1;
+          wb_sel_o <= 4'b0001;
+          wb_we_o <= 1'b0;
+          mem_type <= UART_STATUS;
+          // state <= WRITE_WAIT_ACTION;
+          state <= READ_WAIT_ACTION;
+        end
+
+        //READ_UART
+        READ_WAIT_ACTION: begin
+          if(wb_ack_i) begin
+            data[7:0] <= wb_dat_i[7:0];
+            wb_stb_o <= 1'b0;
+            state <= READ_WAIT_CHECK;
+          end else begin
+            state <= READ_WAIT_ACTION;
+          end
+        end
+        READ_WAIT_CHECK: begin
+          if(data[0]==1'b1) begin
+            wb_stb_o <= 1'b1;
+            wb_sel_o <= 4'b0001;
+            wb_we_o <= 1'b0;
+            mem_type <= UART_REG;
+            state <= READ_DATA_ACTION;
+          end else begin
+            state <= STATE_IDLE;
+          end
+        end
+        READ_DATA_ACTION: begin
+          if(wb_ack_i) begin
+            wb_stb_o <= 1'b0;
+            data[7:0] <= wb_dat_i[7:0];
+            data_reg[7:0] <= wb_dat_i[7:0];
+            state <= READ_DATA_DONE;
+          end else begin
+            state <= READ_DATA_ACTION;
+          end
+        end
+        READ_DATA_DONE: begin
+          wb_stb_o <= 1'b1;
+          wb_sel_o <= 4'b0001;
+          wb_we_o <= 1'b0;
+          mem_type <= UART_STATUS;
+          state <= WRITE_WAIT_CHECK;
+        end
+
+        //WRITE_SRAM
+        WRITE_SRAM_ACTION: begin
+
+        end
+        WRITE_SRAM_DONE: begin
+
+        end
+
+        // WRITE_UART_DONE
+        WRITE_WAIT_ACTION: begin
+          if(wb_ack_i)begin
+            data <= wb_dat_i;
+            wb_stb_o <= 1'b0;
+            state <= WRITE_WAIT_CHECK;
+          end else begin
+            state <= WRITE_WAIT_ACTION;
+          end
+        end
+        WRITE_WAIT_CHECK: begin
+          if(data[5]==1'b1)begin
+            wb_stb_o <= 1'b1;
+            wb_sel_o <= 4'b0001;
+            wb_we_o <= 1'b1;
+            mem_type <= UART_REG;
+            wb_dat_o[7:0] <= data_reg[7:0];
+            state <= WRITE_DATA_ACTION;
+          end else begin
+            state <= STATE_IDLE;
+          end
+        end
+        WRITE_DATA_ACTION: begin
+          if(wb_ack_i) begin
+            wb_stb_o <= 1'b0;
+            state <= STATE_DONE;
+          end else begin
+            state <= WRITE_DATA_ACTION;
+          end
+        end
+        WRITE_DATA_DONE: begin
+          state <= STATE_DONE;
+        end
+        STATE_DONE:begin
+          state <= STATE_IDLE;
+        end
+      endcase
+    end
+  end
   // always_ff @ (posedge clk_i)begin
   //   if(rst_i)begin
   //     state <= STATE_IDLE;

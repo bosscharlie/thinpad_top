@@ -108,12 +108,16 @@ module lab5_top (
   logic sys_clk;
   logic sys_rst;
 
+  logic[31:0] data_o;
+
   assign sys_clk = clk_10M;
   assign sys_rst = reset_of_clk10M;
 
   // 本实验不使用 CPLD 串口，禁用防止总线冲突
   assign uart_rdn = 1'b1;
   assign uart_wrn = 1'b1;
+
+//   assign leds[15:0] = data_o[15:0]; 
 
   /* =========== Lab5 Master begin =========== */
   // Lab5 Master => Wishbone MUX (Slave)
@@ -132,7 +136,7 @@ module lab5_top (
   ) u_lab5_master (
       .clk_i(sys_clk),
       .rst_i(sys_rst),
-
+    //   .data_o(data_o),
       // wishbone master
       .wb_cyc_o(wbm_cyc_o),
       .wb_stb_o(wbm_stb_o),
